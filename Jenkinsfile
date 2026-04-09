@@ -11,6 +11,10 @@ pipeline {
         IMAGE = "horacio1986/jenkins_devops_projectapi"
     }
 
+    tools {
+        nodejs 'Node20'
+    }
+
     parameters {
     string(name: 'BRANCH', defaultValue: 'master', description: 'Branch to deploy')
     }
