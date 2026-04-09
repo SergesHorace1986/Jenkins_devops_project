@@ -21,20 +21,25 @@ pipeline {
     }
 
     stages {
+
         stage('Clean Workspace') {
             steps {
                 deleteDir()
             }
         }
+
         stage('Build Application') {
             steps {
-                echo "📥 Application building for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                echo "Proceed with building the application for branch ${env.BRANCH}?"
+                timeout(time: 10, unit: 'MINUTES') {
                     sh """
-                        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -apt-get install -y nodejs
                         npm install
-                    """
+                        npm run build
+                    """ 
+                }
             }
         }
+
         stage('Test Application') {
             steps {
                 echo "🧪 Running tests for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
@@ -43,6 +48,7 @@ pipeline {
                     """
             }
         }
+        
         stage('Checkout') {
             steps {    
                 echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
