@@ -30,8 +30,8 @@ pipeline {
             steps {
                 echo "📥 Application building for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                     sh """
+                        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -apt-get install -y nodejs
                         npm install
-                        npm run build
                     """
             }
         }
