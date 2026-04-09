@@ -22,33 +22,6 @@ pipeline {
 
     stages {
 
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()
-            }
-        }
-
-        stage('Build Application') {
-            steps {
-                echo "Proceed with building the application for branch ${env.BRANCH}?"
-                timeout(time: 10, unit: 'MINUTES') {
-                    sh """
-                        npm install
-                        npm run build
-                    """ 
-                }
-            }
-        }
-
-        stage('Test Application') {
-            steps {
-                echo "🧪 Running tests for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-                    sh """
-                        npm test
-                    """
-            }
-        }
-
         stage('Checkout') {
             steps {    
                 echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
@@ -63,6 +36,32 @@ pipeline {
             }
         }
 
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                echo "🛠 Building application for branch ${env.BRANCH}"
+                    sh """
+                        npm install
+                        npm run build
+                    """
+            }
+        }
+
+        stage('Test Application') {
+            steps {
+                echo "🧪 Running tests for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                    sh """
+                        npm test
+                    """
+            }
+        }
+
+        
         stage('Build Docker Images') {
             
             steps {
