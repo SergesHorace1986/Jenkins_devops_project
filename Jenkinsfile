@@ -7,16 +7,16 @@ pipeline {
         disableConcurrentBuilds()    
     }
 
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'master', description: 'Branch to deploy')
+    }
+
     environment {
         DOCKERHUB_CREDENTIALS = 'DOCKER_HUB_PASS'
         GITHUB_CREDENTIALS    = 'github-creds'
         KUBECONFIG_CRED       = 'config'
         BRANCH = "${env.BRANCH_NAME ?: params.BRANCH ?: 'master'}"
         IMAGE = "horacio1986/jenkins_devops_projectapi"
-    }
-
-    parameters {
-    string(name: 'BRANCH', defaultValue: 'master', description: 'Branch to deploy')
     }
 
     stages {
@@ -37,23 +37,26 @@ pipeline {
 
         // ✅ Proper checkout using credentials
         stage('Checkout') {
-            steps {    
-                echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${env.BRANCH}"]],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/SergesHorace1986/Jenkins_devops_project.git',
-                        credentialsId: "${GITHUB_CREDENTIALS}"
-                    ]]
-                ])
-            }
+            steps { 
+                script {   
+                    echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "*/${env.BRANCH}"]],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/SergesHorace1986/Jenkins_devops_project.git',
+                            credentialsId: "${GITHUB_CREDENTIALS}"
+                        ]]
+                    ])
+                }
+            }    
         }
 
         // ✅ Test credentials loading with proper masking
         stage('test Credentials') {
             steps {
                 echo "🔍 Testing credentials for DockerHub and GitHub"
+
                 withCredentials([usernamePassword(
                     credentialsId: "${DOCKERHUB_CREDENTIALS}",
                     usernameVariable: 'DOCKER_USER',
@@ -90,19 +93,16 @@ pipeline {
                         pwd
                         ls -la
                     """
+
                     docker.image('node:20-bullseye').inside("-u root -v ${env.WORKSPACE}:${env.WORKSPACE}") {
                         echo "Running inside Node.js 20 Bullseye container"
                         sh """
                             echo "===== DEBUG INFO ====="
-                            whoami
-                            id
-                            pwd
-                            ls -la
+                            whoami && id && pwd && ls -la
 
                             echo "===== NODE INFO ====="
-                            node -v
-                            npm -v
-
+                            node -v && npm -v
+                            
                             echo "===== INSTALL ====="
                             cd backend
                             npm install
@@ -119,10 +119,8 @@ pipeline {
         // ✅ Build Docker Image with proper tagging
         stage('Build Docker Images') {
             steps {
-                echo "🔧 Building image"
-                    sh """
-                        docker build -t ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER} .
-                        """
+                echo "🔧 Building image: ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER}"
+                    sh "docker build -t ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER} ."                    
             }    
         }
 
@@ -138,9 +136,10 @@ pipeline {
                 )]) {
                     sh """
                       echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                      docker push ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER}
+                      docker push $IMAGE:$BRANCH-$BUILD_NUMBER
                     """
                 }
+                sh 'docker logout'
             }
         }
         
