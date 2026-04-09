@@ -1,6 +1,11 @@
 pipeline {
 
-    agent any
+    agent {
+        docker {
+            image 'node:20'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.docker:/root/.docker'
+        }
+    }
 
     environment {
         DOCKERHUB_CREDENTIALS = 'DOCKER_HUB_PASS'
@@ -9,13 +14,6 @@ pipeline {
         BRANCH = "${env.BRANCH_NAME ?: params.BRANCH ?: 'master'}"
 
         IMAGE = "horacio1986/jenkins_devops_projectapi"
-    }
-
-    agent {
-        docker {
-            image 'node:20'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.docker:/root/.docker'
-        }
     }
 
     parameters {
@@ -30,7 +28,7 @@ pipeline {
         }
         stage('Build Application') {
             steps {
-                echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                echo "📥 Application building for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                     sh """
                         npm install
                         npm run build
