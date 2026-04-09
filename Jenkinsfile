@@ -50,6 +50,7 @@ pipeline {
             }
         }
 
+        // ✅ Test credentials loading with proper masking
         stage('test Credentials') {
             steps {
                 echo "🔍 Testing credentials for DockerHub and GitHub"
@@ -83,7 +84,13 @@ pipeline {
             steps {
                 script {
                     echo "🔧 Building and testing application inside Docker container"
-                    docker.image('node:20-bullseye').inside("--user root -t -v ${pwd()}:${pwd()}") {
+
+                    sh """
+                        echo "Workspace content BEFORE Docker:"
+                        pwd
+                        ls -la
+                    """
+                    docker.image('node:20-bullseye').inside("-u root -v ${env.WORKSPACE}:${env.WORKSPACE}") {
                         echo "Running inside Node.js 20 Bullseye container"
                         sh """
                             echo "===== DEBUG INFO ====="
@@ -97,6 +104,7 @@ pipeline {
                             npm -v
 
                             echo "===== INSTALL ====="
+                            cd backend
                             npm install
 
                             echo "===== BUILD & TEST ====="
