@@ -1,11 +1,6 @@
 pipeline {
 
-    agent {
-        docker {
-            image 'node:20-bullseye'
-            args '-u root:root'
-        }
-    }
+    agent none
 
     environment {
         DOCKERHUB_CREDENTIALS = 'DOCKER_HUB_PASS'
@@ -28,28 +23,63 @@ pipeline {
         }
 
         stage('Checkout') {
+            agent any
             steps {    
                 echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "*/${BRANCH}"]],
+                    branches: [[name: "*/master"]],
                     userRemoteConfigs: [[
                         url: 'https://github.com/SergesHorace1986/Jenkins_devops_project.git',
-                        credentialsId: "github-creds"
+                        credentialsId: "${GITHUB_CREDENTIALS}"
                     ]]
                 ])
             }
         }
 
-        stage('Build & test Application') {
+        stage('test Credentials') {
             steps {
-                echo "🛠 Building application for branch ${env.BRANCH}"
+                echo "🔍 Testing credentials for DockerHub and GitHub"
+                withCredentials([usernamePassword(
+                    credentialsId: "${DOCKERHUB_CREDENTIALS}",
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                      echo "DockerHub Username: $DOCKER_USER"
+                      echo "DockerHub Password: ${DOCKER_PASS ? '******' : 'Not Set'}"
+                      echo "Dockerhub credentials loaded successfully"
+                    """
+                }
+                withCredentials([usernamePassword(
+                    credentialsId: "${GITHUB_CREDENTIALS}",
+                    usernameVariable: 'GITHUB_USER',
+                    passwordVariable: 'GITHUB_PASS'
+                )]) {
+                    sh """
+                      echo "GitHub Username: $GITHUB_USER"
+                      echo "GitHub Password: ${GITHUB_PASS ? '******' : 'Not Set'}"
+                        echo "GitHub credentials loaded successfully"
+                    """
+                }
+            }
+        }
+
+        stage('Build & test Application') {
+            agent {
+                docker {
+                    image 'node:20-bullseye'
+                    args '-u root:root'
+                }
+            }
+            steps {
+                echo "🛠 Building & testing application for branch ${env.BRANCH}"
                     sh """
                         whoami
                         pwd
                         ls -la
                         npm install
-                        npm run ci
+                        npm run build
                         npm test
                     """
             }
