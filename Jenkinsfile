@@ -94,7 +94,7 @@ pipeline {
                         ls -la
                     """
 
-                    docker.image('node:20-bullseye').inside("-u root -v ${env.WORKSPACE}:${env.WORKSPACE}") {
+                    docker.image('node:20-bullseye').inside("-u root") {
                         echo "Running inside Node.js 20 Bullseye container"
                         sh """
                             echo "===== DEBUG INFO ====="
