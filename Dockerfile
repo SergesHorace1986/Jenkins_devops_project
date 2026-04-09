@@ -18,6 +18,8 @@ WORKDIR /app
 
 COPY --from=build /app .
 
+RUN apk add --no-cache bash git
+
 EXPOSE 3000
 
 CMD ["node", "src/index.js"]
