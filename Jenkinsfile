@@ -2,7 +2,7 @@ pipeline {
 
     agent {
         docker {
-            image 'node:20-bullseye'
+            image 'node:20-alpine'
             args '-u root:root'
         }
     }
@@ -15,6 +15,7 @@ pipeline {
 
         IMAGE = "horacio1986/jenkins_devops_projectapi"
     }
+
 
     parameters {
     string(name: 'BRANCH', defaultValue: 'master', description: 'Branch to deploy')
@@ -50,7 +51,7 @@ pipeline {
                         pwd
                         ls -la
                         npm install
-                        npm run build
+                        npm run ci
                     """
             }
         }
