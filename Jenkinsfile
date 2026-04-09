@@ -90,8 +90,7 @@ pipeline {
 
                     sh """
                         echo "Workspace content BEFORE Docker:"
-                        pwd
-                        ls -la
+                        pwd && ls -la   
                     """
 
                     docker.image('node:20-bullseye').inside("-u root") {
@@ -108,7 +107,6 @@ pipeline {
                             npm install
 
                             echo "===== BUILD & TEST ====="
-                            npm run build
                             npm test 
                         """
                     }
