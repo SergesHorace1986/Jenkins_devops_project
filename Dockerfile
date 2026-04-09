@@ -12,13 +12,13 @@ COPY . .
 # RUN npm run build
 
 # ------------------------ Runtime stage ------------------------
-FROM node:20-alpine
+FROM node:20-bullseye
 
 WORKDIR /app
 
 COPY --from=build /app .
 
-RUN apk add --no-cache bash git
+RUN apt-get update && apt-get install -y bash git
 
 EXPOSE 3000
 

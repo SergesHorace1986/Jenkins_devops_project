@@ -73,36 +73,35 @@ pipeline {
 
         // ✅ Build + Test inside Docker
         stage('Build & test Application') {
-            agent {
-                docker {
-                    image 'node:20-bullseye'
-                    args '--user root -t'
+            steps {
+                script {
+                    echo "🔧 Building and testing application inside Docker container"
+                    docker.image('node:20-bullseye').inside('--user root -t') {
+                        echo "Running inside Node.js 20 Bullseye container"
+                        sh """
+                            echo "===== DEBUG INFO ====="
+                            whoami
+                            id
+                            pwd
+                            ls -la
+
+                            echo "===== NODE INFO ====="
+                            node -v
+                            npm -v
+
+                            echo "===== INSTALL ====="
+                            npm install
+
+                            echo "===== BUILD & TEST ====="
+                            npm run build || true
+                            npm test || true
+                        """
+                    }
                 }
             }
-            steps {
-                echo "🛠 Building & testing application for branch ${env.BRANCH}"
-
-                sh """
-                        echo "===== DEBUG INFO ====="
-                        whoami
-                        id
-                        pwd
-                        ls -la
-
-                        echo "===== NODE INFO ====="
-                        node -v
-                        npm -v
-
-                        echo "===== INSTALL ====="
-                        npm install
-
-                        echo "===== BUILD & TEST ====="
-                        npm run build || true
-                        npm test || true
-                """
-            }
-        }
         
+        }
+
         // ✅ Build Docker Image with proper tagging
         stage('Build Docker Images') {
             steps {
