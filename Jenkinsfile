@@ -21,15 +21,26 @@ pipeline {
                 deleteDir()
             }
         }
-        stage('Build Started') {
+        stage('Build Application') {
             steps {
                 echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                    sh """
+                        npm install
+                        npm run build
+                    """
             }
         }
-
+        stage('Test Application') {
+            steps {
+                echo "🧪 Running tests for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
+                    sh """
+                        npm test
+                    """
+            }
+        }
         stage('Checkout') {
             steps {    
-
+                echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: "*/master"]],
@@ -41,12 +52,10 @@ pipeline {
             }
         }
 
-        stage('Build Images') {
+        stage('Build Docker Images') {
             
             steps {
-
-                    echo "🔧 Building image"
-
+                echo "🔧 Building image"
                     sh """
                         docker build -t ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER} .
                         """
@@ -55,8 +64,7 @@ pipeline {
         }
 
         stage('Push Images') {
-            steps {
-                
+            steps {                
                 echo "📤 Pushing Docker images to DockerHub"
 
                 withCredentials([usernamePassword(
@@ -73,8 +81,7 @@ pipeline {
         }
 
         stage('Deploy') {
-            steps {
-                
+            steps {                
                 echo "🚢 Starting *Helm Deployment* for branch ${env.BRANCH}"
 
                 withCredentials([file(credentialsId: "${KUBECONFIG_CRED}", variable: 'config')]) {
