@@ -24,6 +24,7 @@ pipeline {
         // ✅ Clean BEFORE checkout
         stage('Clean Workspace') {
             steps {
+                sh 'docker run --rm -u root -v "$WORKSPACE:/workspace" node:20-bullseye rm -rf /workspace/node_modules'
                 deleteDir()
             }
         }
@@ -106,8 +107,11 @@ pipeline {
                             echo "===== INSTALL ====="
                             npm install
 
-                            echo "===== BUILD & TEST ====="
+                            echo "===== TEST ====="
                             npm test 
+
+                            echo "===== CLEANUP ====="
+                            rm -rf node_modules
                         """
                     }
                 }
