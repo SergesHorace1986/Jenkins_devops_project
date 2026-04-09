@@ -11,8 +11,11 @@ pipeline {
         IMAGE = "horacio1986/jenkins_devops_projectapi"
     }
 
-    tools {
-        nodejs 'Node20'
+    agent {
+        docker {
+            image 'node:20'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.docker:/root/.docker'
+        }
     }
 
     parameters {
