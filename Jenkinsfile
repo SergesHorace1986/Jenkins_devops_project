@@ -1,5 +1,5 @@
 pipeline {
-    
+
     agent any
 
     environment {
@@ -9,8 +9,8 @@ pipeline {
         BRANCH = "${env.BRANCH_NAME ?: params.BRANCH ?: 'main'}"
 
         IMAGE = "horacio1986/jenkins_devops_projectapi"
-        
     }
+
 
     parameters {
     string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to deploy')
@@ -44,16 +44,15 @@ pipeline {
 
         stage('Build Images') {
             
-            stage('Build Image') {
-                steps {
+            steps {
 
                     echo "🔧 Building image"
 
                     sh """
                         docker build -t ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER} jenkins_devops_projectapi/
                         """
-                }
             }
+            
         }
 
         stage('Push Images') {
