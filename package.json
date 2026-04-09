@@ -1,0 +1,21 @@
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "description": "API Node.js dockerized for production ready",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "ci": "npm run lint --if-present && npm test --if-present",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": ["node", "express", "docker"],
+  "author": "Horace Tchamba",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}
