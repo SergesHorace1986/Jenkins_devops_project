@@ -12,16 +12,20 @@ pipeline {
         GITHUB_CREDENTIALS    = 'github-creds'
         KUBECONFIG_CRED       = 'config'
         BRANCH = "${env.BRANCH_NAME ?: params.BRANCH ?: 'master'}"
-
         IMAGE = "horacio1986/jenkins_devops_projectapi"
     }
-
 
     parameters {
     string(name: 'BRANCH', defaultValue: 'master', description: 'Branch to deploy')
     }
 
     stages {
+        
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
 
         stage('Checkout') {
             steps {    
@@ -37,13 +41,7 @@ pipeline {
             }
         }
 
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()
-            }
-        }
-
-        stage('Build Application') {
+        stage('Build & test Application') {
             steps {
                 echo "🛠 Building application for branch ${env.BRANCH}"
                     sh """
@@ -52,29 +50,18 @@ pipeline {
                         ls -la
                         npm install
                         npm run ci
-                    """
-            }
-        }
-
-        stage('Test Application') {
-            steps {
-                echo "🧪 Running tests for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
-                    sh """
                         npm test
                     """
             }
         }
-
         
         stage('Build Docker Images') {
-            
             steps {
                 echo "🔧 Building image"
                     sh """
                         docker build -t ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER} .
                         """
-            }
-            
+            }    
         }
 
         stage('Push Images') {
