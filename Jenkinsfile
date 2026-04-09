@@ -4,6 +4,7 @@ pipeline {
 
     options {
         skipDefaultCheckout(true)
+        disableConcurrentBuilds()    
     }
 
     environment {
@@ -27,9 +28,15 @@ pipeline {
             }
         }
 
+        // ✅ Clean Docker images to prevent disk space issues
+        stage('Cleanup Docker') {
+            steps {
+                sh 'docker image prune -f'
+            }
+        }
+
         // ✅ Proper checkout using credentials
         stage('Checkout') {
-            agent any
             steps {    
                 echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                 checkout([
@@ -76,7 +83,7 @@ pipeline {
             steps {
                 script {
                     echo "🔧 Building and testing application inside Docker container"
-                    docker.image('node:20-bullseye').inside('--user root -t') {
+                    docker.image('node:20-bullseye').inside("--user root -t -v ${pwd()}:${pwd()}") {
                         echo "Running inside Node.js 20 Bullseye container"
                         sh """
                             echo "===== DEBUG INFO ====="
@@ -93,13 +100,12 @@ pipeline {
                             npm install
 
                             echo "===== BUILD & TEST ====="
-                            npm run build || true
-                            npm test || true
+                            npm run build
+                            npm test 
                         """
                     }
                 }
             }
-        
         }
 
         // ✅ Build Docker Image with proper tagging
@@ -142,10 +148,10 @@ pipeline {
                         if (env.BRANCH == "dev" || env.BRANCH == "master" || env.BRANCH.startsWith("feature/")) {
                             sh """
                               export KUBECONFIG=$config
-                              helm upgrade --install  fastapi-dev ./fastapi \
+                              helm upgrade --install  fastapi-${env.BRANCH} ./fastapi \
                                 -n dev \
                                 -f fastapi/values-dev.yaml \
-                                --set jenkins_devops_projectapi.image.tag=main-13 \
+                                --set jenkins_devops_projectapi.image.tag=${env.BRANCH}-${env.BUILD_NUMBER} \
                                 --timeout 15m0s
                             """
                         }
@@ -156,10 +162,10 @@ pipeline {
                             }
                             sh """
                               export KUBECONFIG=$config
-                              helm upgrade --install fastapi-prod ./fastapi \
+                              helm upgrade --install fastapi-${env.BRANCH} ./fastapi \
                                 -n prod \
                                 -f fastapi/values-prod.yaml \
-                                --set jenkins_devops_projectapi.image.tag=main-13 \
+                                --set jenkins_devops_projectapi.image.tag=${env.BRANCH}-${env.BUILD_NUMBER} \
                                 --timeout 15m0s
                             """
                         }
