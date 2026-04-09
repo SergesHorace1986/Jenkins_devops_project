@@ -6,14 +6,13 @@ pipeline {
         DOCKERHUB_CREDENTIALS = 'DOCKER_HUB_PASS'
         GITHUB_CREDENTIALS    = 'github-creds'
         KUBECONFIG_CRED       = 'config'
-        BRANCH = "${env.BRANCH_NAME ?: params.BRANCH ?: 'main'}"
+        BRANCH = "${env.BRANCH_NAME ?: params.BRANCH ?: 'master'}"
 
         IMAGE = "horacio1986/jenkins_devops_projectapi"
     }
 
-
     parameters {
-    string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to deploy')
+    string(name: 'BRANCH', defaultValue: 'master', description: 'Branch to deploy')
     }
 
     stages {
@@ -33,7 +32,7 @@ pipeline {
 
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "*/main"]],
+                    branches: [[name: "*/master"]],
                     userRemoteConfigs: [[
                         url: 'https://github.com/SergesHorace1986/Jenkins_devops_project.git',
                         credentialsId: "${GITHUB_CREDENTIALS}"
@@ -82,7 +81,7 @@ pipeline {
                     script {
                         // def helmFlags = "--atomic --timeout 5m0s"
 
-                        if (env.BRANCH == "dev" || env.BRANCH == "main" || env.BRANCH.startsWith("feature/")) {
+                        if (env.BRANCH == "dev" || env.BRANCH == "master" || env.BRANCH.startsWith("feature/")) {
                             sh """
                               export KUBECONFIG=$config
                               helm upgrade --install  fastapi-dev ./fastapi \
@@ -93,7 +92,7 @@ pipeline {
                             """
                         }
 
-                        if (env.BRANCH == "main") {
+                        if (env.BRANCH == "master") {
                             timeout(time: 20, unit: 'MINUTES') {
                                 input message: "Deploy to PRODUCTION?"
                             }
