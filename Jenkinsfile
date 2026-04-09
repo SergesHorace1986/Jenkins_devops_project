@@ -96,6 +96,7 @@ pipeline {
 
                     docker.image('node:20-bullseye').inside("-u root") {
                         echo "Running inside Node.js 20 Bullseye container"
+
                         sh """
                             echo "===== DEBUG INFO ====="
                             whoami && id && pwd && ls -la
@@ -104,7 +105,6 @@ pipeline {
                             node -v && npm -v
                             
                             echo "===== INSTALL ====="
-                            cd backend
                             npm install
 
                             echo "===== BUILD & TEST ====="
