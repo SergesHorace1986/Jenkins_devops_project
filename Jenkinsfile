@@ -32,10 +32,10 @@ pipeline {
                 echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: "*/master"]],
+                    branches: [[name: "*/${BRANCH}"]],
                     userRemoteConfigs: [[
                         url: 'https://github.com/SergesHorace1986/Jenkins_devops_project.git',
-                        credentialsId: "${GITHUB_CREDENTIALS}"
+                        credentialsId: "github-creds"
                     ]]
                 ])
             }
