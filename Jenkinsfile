@@ -2,8 +2,8 @@ pipeline {
 
     agent {
         docker {
-            image 'node:20'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.docker:/root/.docker'
+            image 'node:20-alpine'
+            args '-u root:root'
         }
     }
 
@@ -48,7 +48,7 @@ pipeline {
                     """
             }
         }
-        
+
         stage('Checkout') {
             steps {    
                 echo "📥 Starting Checkout stage for ${env.JOB_NAME} #${env.BUILD_NUMBER}"
