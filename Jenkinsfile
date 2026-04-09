@@ -48,7 +48,7 @@ pipeline {
                     echo "🔧 Building image"
 
                     sh """
-                        docker build -t ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER} jenkins_devops_projectapi/
+                        docker build -t ${IMAGE}:${env.BRANCH}-${env.BUILD_NUMBER} .
                         """
             }
             
