@@ -46,6 +46,9 @@ pipeline {
             steps {
                 echo "🛠 Building application for branch ${env.BRANCH}"
                     sh """
+                        whoami
+                        pwd
+                        ls -la
                         npm install
                         npm run build
                     """
